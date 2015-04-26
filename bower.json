@@ -1,0 +1,22 @@
+{
+    "author": {
+        "name": "https://github.com/rkeshmir/persian-angular-ui-bootstrap/graphs/contributors"
+    },
+    "name": "persian-angular-bootstrap",
+    "keywords": [
+        "angular",
+        "angular-ui",
+        "bootstrap",
+        "persian"
+    ],
+    "license": "MIT",
+    "ignore": [],
+    "description": "Native Persian AngularJS (Angular) directives for Bootstrap.",
+    "version": "0.12.1",
+    "main": ["./ui-bootstrap-tpls.js"],
+    "dependencies": {
+        "angular": ">=1 <1.3.0",
+        "moment": "v2.9.0",
+        "moment-jalaali": "v0.3.4"
+    }    
+}
