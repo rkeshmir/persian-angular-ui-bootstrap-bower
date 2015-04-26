@@ -15,7 +15,7 @@
     "version": "0.12.1",
     "main": ["./ui-bootstrap-tpls.js"],
     "dependencies": {
-        "angular": "v1.3.0",
+        "angular": "v1.3.13",
         "moment": "v2.9.0",
         "moment-jalaali": "v0.3.4"
     }    
