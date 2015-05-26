@@ -2,7 +2,7 @@
  * persian-angular-ui-bootstrap
  * http://rkeshmir/github/bootstrap/
 
- * Version: 0.13.0-SNAPSHOT - 2015-04-26
+ * Version: 0.13.0-SNAPSHOT - 2015-05-26
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
@@ -1042,6 +1042,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     case 'yyyy':
                         jformat = 'jYYYY';
                         break;
+                    case 'yy':
+                        jformat = 'jYY';
+                        break;
+                    case 'mm':
+                      jformat = 'jMM';
                     case 'EEE':
                     case 'EEEE':
                         jformat = 'E';
@@ -1095,7 +1100,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             compareMonth: function(date1,date2){
                 var mDate1 = moment(date1);
                 var mDate2 = moment(date2);
-                return mDate1.format('jMM') - mDate2.format('jMM');
+
+              console.log(mDate1.format('jMM') , mDate2.format('jMM'));
+                return mDate1.format('jYYYY') - mDate2.format('jYYYY') != 0
+                  ? mDate1.format('jYYYY') - mDate2.format('jYYYY')
+                  :  mDate1.format('jMM') - mDate2.format('jMM');
             },
             compareYear: function(date1,date2){
                 var mDate1 = moment(date1);
@@ -1363,7 +1372,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 dateDisabled: '&',
                 customClass: '&',
                 shortcutPropagation: '&?',
-                rtl: '@?',
+                rtl: '=?',
                 persian: '=?'
             },
             require: ['datepicker', '?^ngModel'],
@@ -1689,7 +1698,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     }
 
                     scope.watchData = {};
-                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation'], function( key ) {
+                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation', 'rtl'], function( key ) {
                         if ( attrs[key] ) {
                             var getAttribute = $parse(attrs[key]);
                             scope.$parent.$watch(getAttribute, function(value){

@@ -2,7 +2,7 @@
  * persian-angular-ui-bootstrap
  * http://rkeshmir/github/bootstrap/
 
- * Version: 0.13.0-SNAPSHOT - 2015-04-26
+ * Version: 0.13.0-SNAPSHOT - 2015-05-26
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
@@ -1043,6 +1043,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     case 'yyyy':
                         jformat = 'jYYYY';
                         break;
+                    case 'yy':
+                        jformat = 'jYY';
+                        break;
+                    case 'mm':
+                      jformat = 'jMM';
                     case 'EEE':
                     case 'EEEE':
                         jformat = 'E';
@@ -1096,7 +1101,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             compareMonth: function(date1,date2){
                 var mDate1 = moment(date1);
                 var mDate2 = moment(date2);
-                return mDate1.format('jMM') - mDate2.format('jMM');
+
+              console.log(mDate1.format('jMM') , mDate2.format('jMM'));
+                return mDate1.format('jYYYY') - mDate2.format('jYYYY') != 0
+                  ? mDate1.format('jYYYY') - mDate2.format('jYYYY')
+                  :  mDate1.format('jMM') - mDate2.format('jMM');
             },
             compareYear: function(date1,date2){
                 var mDate1 = moment(date1);
@@ -1364,7 +1373,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 dateDisabled: '&',
                 customClass: '&',
                 shortcutPropagation: '&?',
-                rtl: '@?',
+                rtl: '=?',
                 persian: '=?'
             },
             require: ['datepicker', '?^ngModel'],
@@ -1690,7 +1699,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     }
 
                     scope.watchData = {};
-                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation'], function( key ) {
+                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation', 'rtl'], function( key ) {
                         if ( attrs[key] ) {
                             var getAttribute = $parse(attrs[key]);
                             scope.$parent.$watch(getAttribute, function(value){
@@ -4233,7 +4242,7 @@ angular.module("template/datepicker/day.html", []).run(["$templateCache", functi
     "        <th ng-repeat=\"label in labels track by $index\" class=\"text-center\"><small aria-label=\"{{label.full}}\">{{label.abbr}}</small></th>\n" +
     "    </tr>\n" +
     "    </thead>\n" +
-    "    <tbody>\n" +
+    "    <tbody style=\"direction: ltr!important;\">\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
     "        <td ng-show=\"showWeeks\" class=\"text-center h6\"><em>{{ weekNumbers[$index] }}</em></td>\n" +
     "        <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\" ng-class=\"dt.customClass\">\n" +
@@ -4255,7 +4264,7 @@ angular.module("template/datepicker/month.html", []).run(["$templateCache", func
     "        <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-chevron-right': !rtl, 'glyphicon-chevron-left': rtl }\"></i></button></th>\n" +
     "    </tr>\n" +
     "    </thead>\n" +
-    "    <tbody>\n" +
+    "    <tbody style=\"direction: ltr!important;\">\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
     "        <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
     "            <button type=\"button\" style=\"width:100%;\" class=\"btn btn-default\" ng-class=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-class=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
@@ -4291,7 +4300,7 @@ angular.module("template/datepicker/year.html", []).run(["$templateCache", funct
     "        <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-chevron-right': !rtl, 'glyphicon-chevron-left': rtl }\"></i></button></th>\n" +
     "    </tr>\n" +
     "    </thead>\n" +
-    "    <tbody>\n" +
+    "    <tbody style=\"direction: ltr!important;\">\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
     "        <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
     "            <button type=\"button\" style=\"width:100%;\" class=\"btn btn-default\" ng-class=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-class=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
