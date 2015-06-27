@@ -2,7 +2,7 @@
  * persian-angular-ui-bootstrap
  * http://rkeshmir/github/bootstrap/
 
- * Version: 0.13.0-SNAPSHOT - 2015-05-26
+ * Version: 0.13.0-SNAPSHOT - 2015-06-27
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
@@ -832,7 +832,209 @@ angular.module('ui.bootstrap.dateparser', [])
 
     return true;
   }
-}]);
+  }])
+
+  .service('jDateParser', ['$locale', 'orderByFilter', function ($locale, orderByFilter) {
+
+    this.parsers = {};
+
+    var formatCodeToRegex = {
+      'yyyy': {
+        regex: '\\d{4}',
+        apply: function (value) {
+          this.year = +value;
+        }
+      },
+      'yy': {
+        regex: '\\d{2}',
+        apply: function (value) {
+          this.year = +value + 2000;
+        }
+      },
+      'y': {
+        regex: '\\d{1,4}',
+        apply: function (value) {
+          this.year = +value;
+        }
+      },
+      'MMMM': {
+        regex: $locale.DATETIME_FORMATS.MONTH.join('|'),
+        apply: function (value) {
+          this.month = $locale.DATETIME_FORMATS.MONTH.indexOf(value);
+        }
+      },
+      'MMM': {
+        regex: $locale.DATETIME_FORMATS.SHORTMONTH.join('|'),
+        apply: function (value) {
+          this.month = $locale.DATETIME_FORMATS.SHORTMONTH.indexOf(value);
+        }
+      },
+      'MM': {
+        regex: '0[1-9]|1[0-2]',
+        apply: function (value) {
+          this.month = value - 1;
+        }
+      },
+      'M': {
+        regex: '[1-9]|1[0-2]',
+        apply: function (value) {
+          this.month = value - 1;
+        }
+      },
+      'dd': {
+        regex: '[0-2][0-9]{1}|3[0-1]{1}',
+        apply: function (value) {
+          this.date = +value;
+        }
+      },
+      'd': {
+        regex: '[1-2]?[0-9]{1}|3[0-1]{1}',
+        apply: function (value) {
+          this.date = +value;
+        }
+      },
+      'EEEE': {
+        regex: $locale.DATETIME_FORMATS.DAY.join('|')
+      },
+      'EEE': {
+        regex: $locale.DATETIME_FORMATS.SHORTDAY.join('|')
+      }
+    };
+
+    function createParser(format) {
+      var map = [], regex = format.split('');
+
+      angular.forEach(formatCodeToRegex, function (data, code) {
+        var index = format.indexOf(code);
+
+        if (index > -1) {
+          format = format.split('');
+
+          regex[index] = '(' + data.regex + ')';
+          format[index] = '$'; // Custom symbol to define consumed part of format
+          for (var i = index + 1, n = index + code.length; i < n; i++) {
+            regex[i] = '';
+            format[i] = '$';
+          }
+          format = format.join('');
+
+          map.push({index: index, apply: data.apply});
+        }
+      });
+
+      return {
+        regex: new RegExp('^' + regex.join('') + '$'),
+        map: orderByFilter(map, 'index')
+      };
+    }
+
+    function getJFormat(format) {
+      var jformat = '';
+      switch (format) {
+        case 'yyyy-MM-dd':
+          jformat = 'jYYYY-jMM-jDD';
+          break;
+        case 'dd-MMMM-yyyy':
+          jformat = 'jDD-jMMMM-jYYYY';
+          break;
+        case 'yyyy/MM/dd':
+          jformat = 'jYYYY/jMM/jDD';
+          break;
+        case 'dd.MM.yyyy':
+          jformat = 'jDD.jMM.jYYYY';
+          break;
+        case 'shortDate':
+        case 'YY/M/D':
+          jformat = 'jYY/jM/jD';
+          break;
+        case 'dd':
+          jformat = 'jDD';
+          break;
+        case 'MMMM yyyy':
+          jformat = 'jMMMM jYYYY';
+          break;
+        case 'MMMM':
+          jformat = 'jMMMM';
+          break;
+        case 'yyyy':
+          jformat = 'jYYYY';
+          break;
+        case 'yy':
+          jformat = 'jYY';
+          break;
+        case 'mm':
+          jformat = 'jMM';
+        case 'EEE':
+        case 'EEEE':
+          jformat = 'E';
+          break;
+        default :
+          jformat = format;
+      }
+      return jformat;
+    }
+
+    this.parse = function (input, format) {
+      console.log('parse:');
+      input = moment(input, getJFormat(format)).format(format.toUpperCase()); // 2013-8-25 16:40:00
+      if (!angular.isString(input) || !format) {
+        return input;
+      }
+
+      format = $locale.DATETIME_FORMATS[format] || format;
+
+      if (!this.parsers[format]) {
+        this.parsers[format] = createParser(format);
+      }
+      console.log(input);
+      console.log(format);
+      var parser = this.parsers[format],
+        regex = parser.regex,
+        map = parser.map,
+        results = input.match(regex);
+      console.log(parser);
+      console.log(regex);
+      console.log(map);
+      console.log(results);
+
+      if (results && results.length) {
+        var fields = {year: 1900, month: 0, date: 1, hours: 0}, dt;
+
+        for (var i = 1, n = results.length; i < n; i++) {
+          var mapper = map[i - 1];
+          if (mapper.apply) {
+            mapper.apply.call(fields, results[i]);
+          }
+        }
+        //  convert input Jalali date to gregorian
+        //var tdt = moment(fields.year+'/'+fields.month+'/'+fields.date, 'jYYYY/jM/jD').format('YYYY-M-D') // 2013-8-25
+        //var arr = tdt.split('-');
+        //angular.forEach(arr,function(v,i){
+        //  arr[i] = parseInt(v);
+        //});
+        if (isValid(fields.year, fields.month, fields.date)) {
+          dt = new Date(fields.year, fields.month, fields.date, fields.hours);
+        }
+
+        return dt;
+      }
+    };
+
+    // Check if date is valid for specific month (and year for February).
+    // Month: 0 = Jan, 1 = Feb, etc
+    function isValid(year, month, date) {
+      if (month === 1 && date > 28) {
+        return date === 29 && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0);
+      }
+
+      if (month === 3 || month === 5 || month === 8 || month === 10) {
+        return date < 31;
+      }
+
+      return true;
+    }
+  }]);
+
 
 angular.module('ui.bootstrap.position', [])
 
@@ -1161,7 +1363,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
         maxDate: null,
         shortcutPropagation: false,
         rtl: false, //  add rtl option
-        persian: true //  add persian option
+    persian: true //  add persian option
     })
 
     .controller('DatepickerController', ['$scope', '$attrs', '$parse', '$interpolate', '$timeout', '$log', 'dateFilter',
@@ -1232,7 +1434,8 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     if ( isValid ) {
                         this.activeDate = date;
                     } else {
-                        $log.error('Datepicker directive: "ng-model" value must be a Date object, a number of milliseconds since 01.01.1970 or a string representing an RFC2822 or ISO 8601 date.');
+                      console.log(ngModelCtrl.$viewValue);
+                      //$log.error('Datepicker directive: "ng-model" value must be a Date object, a number of milliseconds since 01.01.1970 or a string representing an RFC2822 or ISO 8601 date.');
                     }
                     ngModelCtrl.$setValidity('date', isValid);
                 }
@@ -1636,9 +1839,9 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
         showButtonBar: true
     })
 
-    .directive('datepickerPopup', ['$compile', '$parse', '$document', '$position', 'dateFilter', 'dateParser',
+  .directive('datepickerPopup', ['$compile', '$parse', '$document', '$position', 'dateFilter', 'jDateParser',
         'datepickerPopupConfig', 'jDateService',
-        function ($compile, $parse, $document, $position, dateFilter, dateParser, datepickerPopupConfig,jDateService) {
+    function ($compile, $parse, $document, $position, dateFilter, jDateParser, datepickerPopupConfig, jDateService) {
             return {
                 restrict: 'EA',
                 require: 'ngModel',
@@ -1742,7 +1945,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                         } else if (angular.isDate(viewValue) && !isNaN(viewValue)) {
                             return viewValue;
                         } else if (angular.isString(viewValue)) {
-                            var date = dateParser.parse(viewValue, dateFormat) || new Date(viewValue);
+                          var date = jDateParser.parse(viewValue, dateFormat) || new Date(viewValue);
                             if (isNaN(date)) {
                                 return undefined;
                             } else {
@@ -1763,7 +1966,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                         } else if (angular.isDate(value) && !isNaN(value)) {
                             return true;
                         } else if (angular.isString(value)) {
-                            var date = dateParser.parse(value, dateFormat) || new Date(value);
+                          var date = jDateParser.parse(value, dateFormat) || new Date(value);
                             return !isNaN(date);
                         } else {
                             return false;
