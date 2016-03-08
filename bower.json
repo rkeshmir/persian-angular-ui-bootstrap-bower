@@ -12,11 +12,9 @@
     "license": "MIT",
     "ignore": [],
     "description": "Native Persian AngularJS (Angular) directives for Bootstrap.",
-    "version": "0.12.2",
-    "main": ["./ui-bootstrap-tpls.js"],
+    "version": "0.9", 
+    "main": ["./ui-bootstrap-tpls.min.js"],
     "dependencies": {
-        "angular": "v1.3.13",
-        "moment": "v2.9.0",
-        "moment-jalaali": "v0.3.4"
+        "angular": "^1.4.8"
     }    
 }
